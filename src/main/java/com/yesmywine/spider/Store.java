@@ -5,47 +5,49 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 public class Store {
 
-	Logger logger = Logger.getLogger(Store.class);
+	private static final Logger logger = Logger.getLogger(Store.class);
+	
+	public static LinkedList<String> hosts = new LinkedList<String>();
+	public static LinkedList<String> urls = new LinkedList<String>();
 
+	static {
+		hosts = readTxtFile(Constants.ROOT_PATH + "hosts.txt");
+		Collections.shuffle(hosts); // 打乱host先后顺序，避免单个host发送请求过多
+		urls = readTxtFile(Constants.ROOT_PATH + "urls.txt");
+	}
 	/**
-	 * 从文本文件中读取查询关键字，每个关键字用换行隔开
-	 * 
-	 * @param txtPath
-	 *            key文件的路径
+	 * 读取文本文件
+	 * @param txtPath  key文件的路径
 	 * @return
 	 */
-	public List<String> readKeys(String txtPath) {
-		List<String> keys = new LinkedList<String>();
+	private static LinkedList<String> readTxtFile(String txtPath) {
+		LinkedList<String> textContent = new LinkedList<String>();
 		try {
 			FileInputStream in = new FileInputStream(txtPath);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					in, "gb2312"));
-			String key = null;
-			while ((key = reader.readLine()) != null) {
-				key = key.trim();
-				if (key.equals("")) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in, "gb2312"));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (line.charAt(0) == '#' || line.equals("")) {
 					continue;
 				}
-				if(key.charAt(0) == '#'){
-					continue;
-				}
-				keys.add(key);
+				textContent.add(line);
 			}
 			reader.close();
 		} catch (FileNotFoundException e) {
-			logger.error("关键字文件keys.txt不存在！");
+			logger.error("配置文件"+txtPath+"不存在！");
 			System.exit(1);
 		} catch (IOException e) {
-			logger.error("关键字文件读取错误！");
+			logger.error("配置文件"+txtPath+"读取错误！");
 			System.exit(2);
 		}
-		return keys;
+		return textContent;
 	}
 }

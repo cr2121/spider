@@ -13,13 +13,13 @@ import org.apache.log4j.Logger;
 
 /**
  * 资源采集程序入口
- * 
+ * 发布前请修改Constants.ROOT_PATH配置
  * @author tao_wang
  */
 public class Main {
 	
 	private static final Logger logger = Logger.getLogger(Main.class);
-	
+		
 	public static void main(String[] args) throws Exception {
 		
 		Date beginDate = getInputDate(); // 所搜该日期之后的所有新闻
@@ -30,41 +30,34 @@ public class Main {
 		int endPage = sc.nextInt();
 		sc.close();
 		
-		File outFoler = new File(/*"c:/" + */Constants.DATE_FORMAT.format(new Date())+"_"+startPage+"_"+endPage); // !!!!!!!!!!!!!开发时请用绝对路径
+		File outFoler = new File(Constants.ROOT_PATH + Constants.DATE_FORMAT.format(new Date())+"_"+startPage+"_"+endPage);
 		if(outFoler.exists()){
 			logger.error("输出文件夹" + outFoler.getName() + "已经存在，请重命名或者删除。");
 			System.exit(4);
 		}
 		outFoler.mkdir();
 		
-		List<String> urls = new Store().readKeys(/*"c:/" + */"urls.txt"); // !!!!!!!!!!!!!开发时请用绝对路径
+		List<String> urls = Store.urls;
 		for (String url : urls) {
 			url = url + "&Pages=";
 			int i = 1;
-			int j = 1;
-			logger.info("正在解析第"+i+"个搜索页面");
 			ParserHtml parserHtml = new ParserHtml();
 			List<String> links = parserHtml.extractContentLinkFromSearchPages(url, beginDate, startPage, endPage);
 			int total = links.size();
-			File outFile = new File(outFoler.getAbsolutePath() + "/"+i+"_1.txt");
+			File outFile = new File(outFoler.getAbsolutePath() + "/result.txt");
 			FileOutputStream out = new FileOutputStream(outFile);
 			PrintWriter pw = new PrintWriter(out);
+			pw.print("<?xml version=\"1.0\" encoding=\"gb2312\"?>");
+			pw.print("<newspapers>");
 			for(String link : links){
 				link = "http://newspaper.duxiu.com/" + link;
 				logger.info("写内容到本地硬盘 "+i+"/" + total + ".");
 				Newspaper newspaper = parserHtml.link2Newspaper(link);
 				pw.print((newspaper.toString()));
-				if(i%100 == 0){// 一个文件写一百条
-					j++;
-					pw.close();
-					out = new FileOutputStream(outFoler.getAbsolutePath() + "/" + i + "_" + j+ ".txt");
-					pw = new PrintWriter(out);
-				}
 				i++;
-				if(i > total){
-					pw.close();
-				}
 			}
+			pw.print("</newspapers>");
+			pw.close();
 		}
 		logger.info("任务完毕！");
 	}

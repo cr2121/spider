@@ -50,7 +50,15 @@ public class Newspaper {
 
 	@Override
 	public String toString() {
-		return "T\r\n" + title + "\r\nT2\r\n" + subTitle + "\r\nD\r\n" + postDate
-				+ "\r\nF\r\n" + from + "\r\nC\r\n" + content +"\r\n";
+		StringBuilder sb = new StringBuilder();
+		sb.append("<newspaper>");
+		sb.append("<title><![CDATA[").append(title).append("]]></title>");
+		sb.append("<subtitle><![CDATA[").append(subTitle).append("]]></subtitle>");
+		sb.append("<postdate><![CDATA[").append(postDate).append("]]></postdate>");
+		sb.append("<from><![CDATA[").append(from).append("]]></from>");
+		sb.append("<content><![CDATA[").append(content).append("]]></content>");
+		sb.append("</newspaper>");
+		sb.append("\r\n");
+		return sb.toString();
 	}
 }

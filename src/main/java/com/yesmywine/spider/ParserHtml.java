@@ -1,6 +1,5 @@
 package com.yesmywine.spider;
 
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -98,34 +97,41 @@ public class ParserHtml {
 	public List<String> extractContentLinkFromSearchPages(String url, Date beginDate, int startPage, int endPage) throws Exception{
 		List<String> links = new LinkedList<String>();
 		int pageNo = startPage; // 当前页
-		int maxPage = endPage; // 最大页
-		int totalPage = endPage - startPage + 1;
+		int pageCount = endPage - startPage + 1; // 最大页数
 		int i = 1;
 		logger.info("搜索"+Constants.DATE_FORMAT.format(beginDate)+"至今"+startPage+"-"+endPage+"页记录");
 		do {
 			if(i == 1){
 				logger.info("正在搜索第1页");
 			}else{
-				logger.info("正在搜索第"+i+"页,共"+totalPage+"页。");
+				logger.info("正在搜索第"+i+"页,共"+pageCount+"页。");
 			}
 			// 查询关键字搜索页第一页
 			String queryUrl = url+pageNo;
 			String html = Http.getHttp().httpClientGet(queryUrl);
-			// 处理第一页时读取最大页数
-			if(pageNo == 1){
-				maxPage = Math.min(getMaxPage(html), endPage);
+			// 处理第一次搜索时读取最大页数
+			if(i == 1){
+				int maxPageCount = getMaxPageCount(html);
+				if(endPage > maxPageCount){
+					pageCount = maxPageCount - startPage + 1;
+				}
 			}
 			// 找到搜索结果的form
 			List<String> thisPageLinks = extractContentLink(html, beginDate);
 			links.addAll(thisPageLinks);
 			pageNo++;
 			i++;
-		} while (pageNo <= maxPage && !done);
+		} while (pageNo <= pageCount && !done);
 		logger.info("搜索完毕开始写文件");
 		return links;
 	}
 	
-	private int getMaxPage(String html){
+	/**
+	 * 获取该搜索结果的最大页码
+	 * @param html
+	 * @return
+	 */
+	private int getMaxPageCount(String html){
 		Document doc = Jsoup.parse(html);
 		Elements list = doc.getElementsByTag("script");
 		String script = list.get(list.size()-5).data();

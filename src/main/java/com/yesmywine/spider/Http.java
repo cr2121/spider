@@ -9,20 +9,22 @@ import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
 
 public class Http {
+	public int requestTimes = 0;
 	
 	private static final Logger logger = Logger.getLogger(Http.class);
 	
-	private static HttpClient browser = new DefaultHttpClient();
+	private static DefaultHttpClient browser = new DefaultHttpClient();
 	private HttpGet httpGet;
 	private HttpPost httpPost;
 	private HttpResponse response;
@@ -32,16 +34,12 @@ public class Http {
 	}
 	private static Http http;
 	static {
-		// 设置请求头
-		List<Header> headers = new ArrayList<Header>();  
-        headers.add(new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.62 Safari/537.36"));  
-        //headers.add(new BasicHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"));
-/*        headers.add(new BasicHeader("Accept-Encoding", "gzip,deflate,sdch"));
-        headers.add(new BasicHeader("Cache-Control", "max-age=0"));
-        headers.add(new BasicHeader("Connection", "keep-alive"));
-        headers.add(new BasicHeader("accept-language", "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4"));*/
-        browser.getParams().setParameter("http.default-headers", headers);  
-        
+		// 设置请求头 模拟为Chrome浏览器
+		List<Header> headers = new ArrayList<Header>();
+        headers.add(new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.62 Safari/537.36"));
+        browser.getParams().setParameter("http.default-headers", headers);
+		// 设置代理，隐藏本地ip
+		changeProxyHost();
         http = new Http();
 		try {
 			http.login();
@@ -62,13 +60,38 @@ public class Http {
 	 * @throws Exception 
 	 */
 	public String httpClientGet(String url) throws Exception {
-		Thread.sleep(3000);
-		String content = null;
-		httpGet = new HttpGet(url);
-		response = browser.execute(httpGet);
-		content = readResponse(response);
+		Http.getHttp().requestTimes++;
+		if(requestTimes % 15 == 0){
+			Thread.sleep(3000);
+			browser.getCookieStore().clear();
+			http.login();
+		}
+		String responseText = null;
+		while (true) {
+			boolean success = false; // 表示请求是否成功
+			httpGet = new HttpGet(url);
+			response = browser.execute(httpGet);
+			int responseCode = response.getStatusLine().getStatusCode();
+			switch (responseCode) {
+				case 200:
+					success = true;
+					break;
+				case 403:
+					logger.warn("ip被封停，正在更换代理服务器。");
+					// 设置代理服务器
+					httpGet.abort();
+					changeProxyHost();
+					break;
+				default:
+					break;
+			}
+			if(success){
+				break;
+			}
+		}
+		responseText = readResponse(response);
 		httpGet.abort();
-		return content;
+		return responseText;
 	}
 	
 	/**
@@ -108,5 +131,20 @@ public class Http {
 		    }
 		}
 		return content.toString();
+	}
+	
+	/**
+	 *  设置代理服务器，将本地IP彻底隐藏
+	 */
+	private static void changeProxyHost(){
+		if(Store.hosts.size() == 0){
+			logger.error("代理服务器已经用完，仍没有采集足够新闻!");
+			System.exit(6);
+		}
+		String hostAndPortString = Store.hosts.pop();
+		String[] hostAndPostArray = hostAndPortString.split(":");
+		HttpHost proxy = new HttpHost(hostAndPostArray[0], Integer.valueOf(hostAndPostArray[1]));
+		browser.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,	proxy);
+		logger.info("当前代理 " + hostAndPortString);
 	}
 }
