@@ -67,8 +67,8 @@ public class Http {
 			http.login();
 		}
 		String responseText = null;
+		boolean success = false; // 表示请求是否成功
 		while (true) {
-			boolean success = false; // 表示请求是否成功
 			httpGet = new HttpGet(url);
 			response = browser.execute(httpGet);
 			int responseCode = response.getStatusLine().getStatusCode();
