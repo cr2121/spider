@@ -47,7 +47,7 @@ public class Main {
 			File outFile = new File(outFoler.getAbsolutePath() + "/result.txt");
 			FileOutputStream out = new FileOutputStream(outFile);
 			PrintWriter pw = new PrintWriter(out);
-			pw.print("<?xml version=\"1.0\" encoding=\"gb2312\"?>");
+			pw.print("<?xml version=\"1.0\" encoding=\"utf8\"?>");
 			pw.print("<newspapers>");
 			for(String link : links){
 				link = "http://newspaper.duxiu.com/" + link;

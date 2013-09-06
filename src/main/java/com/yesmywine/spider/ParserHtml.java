@@ -1,5 +1,6 @@
 package com.yesmywine.spider;
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -180,8 +181,9 @@ public class ParserHtml {
 	 * @param html
 	 * @param selector
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	private String parserTextFromElement(Element html, String selector){
+	private String parserTextFromElement(Element html, String selector) throws UnsupportedEncodingException{
 		String text = "";
 		Elements list = html.select(selector);
 		if(list.size() > 0){
@@ -189,6 +191,6 @@ public class ParserHtml {
 				text += list.get(i).html();
 			}
 		}
-		return text;
+		return new String(text.getBytes(),"utf8");
 	}
 }
