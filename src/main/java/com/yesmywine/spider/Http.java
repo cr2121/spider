@@ -44,7 +44,7 @@ public class Http {
 		try {
 			http.login();
 		} catch (Exception e) {
-			logger.error("登陆网站失败，无法继续！");
+			logger.error("登陆网站失败，无法继续，请检查代理服务器。");
 			System.exit(3);
 		}
 	}
