@@ -79,9 +79,9 @@ public class HttpTest {
 	}
 	
 	@Test
-	public void getInputDateTest() throws FileNotFoundException {
-/*		Main m = new Main();
-		System.out.println(m.getInputDate());*/
+	public void getInputDateTest() throws Exception {
+		ParserHtml parserHtml = new ParserHtml();
+		Newspaper newspaper = parserHtml.link2Newspaper("http://newspaper.duxiu.com/readbz.jsp?dxid=100003713119&ustext=1&npid=114572961&qwid=-1&d=29EC860FD3812DC4F413B5B1BADC62D1&sw=+%E6%B1%BD%E8%BD%A6&ecode=utf-8");
 	}
 
 }

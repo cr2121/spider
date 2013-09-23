@@ -24,15 +24,15 @@ public class Main {
 		
 		Date beginDate = getInputDate(); // 所搜该日期之后的所有新闻
 		Scanner sc = new Scanner(System.in);
-		System.out.print("请输入开始页码：");
+		System.out.print("please input start page no. ");
 		int startPage = sc.nextInt();
-		System.out.print("请输入结束页码：");
+		System.out.print("please input end page no. ");
 		int endPage = sc.nextInt();
 		sc.close();
 		
 		File outFoler = new File(Constants.ROOT_PATH + Constants.DATE_FORMAT.format(new Date())+"_"+startPage+"_"+endPage);
 		if(outFoler.exists()){
-			logger.error("输出文件夹" + outFoler.getName() + "已经存在，请重命名或者删除。");
+			logger.error("Output folder" + outFoler.getName() + "already exits.remove or rename it.");
 			System.exit(4);
 		}
 		outFoler.mkdir();
@@ -47,25 +47,22 @@ public class Main {
 			File outFile = new File(outFoler.getAbsolutePath() + "/result.txt");
 			FileOutputStream out = new FileOutputStream(outFile);
 			PrintWriter pw = new PrintWriter(out);
-			pw.print("<?xml version=\"1.0\" encoding=\"utf8\"?>");
-			pw.print("<newspapers>");
 			for(String link : links){
 				link = "http://newspaper.duxiu.com/" + link;
-				logger.info("写内容到本地硬盘 "+i+"/" + total + ".");
+				logger.info("write file "+i+"/" + total + ".");
 				Newspaper newspaper = parserHtml.link2Newspaper(link);
 				pw.print((newspaper.toString()));
 				i++;
 			}
-			pw.print("</newspapers>");
 			pw.close();
 		}
-		logger.info("任务完毕！");
+		logger.info("Complete.");
 	}
 	
 	private static Date getInputDate(){
 		Date beginDate = null;
 		while(beginDate == null){
-			System.out.print("请输入开始时间("+Constants.DATE_FORMAT.format(new Date())+")：");
+			System.out.print("please input start date("+Constants.DATE_FORMAT.format(new Date())+"): ");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			try {
 				String input = reader.readLine();
@@ -74,7 +71,7 @@ public class Main {
 				}
 				beginDate = Constants.DATE_FORMAT.parse(input);
 			} catch (Exception e) {
-				System.out.println("日期格式错误请重新输入(yyyy.MM.dd)。");
+				System.out.println("date format error (yyyy.MM.dd)。");
 				continue;
 			}
 		}

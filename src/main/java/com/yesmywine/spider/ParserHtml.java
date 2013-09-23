@@ -36,7 +36,7 @@ public class ParserHtml {
 	 * @return
 	 * @throws ParserException 
 	 */
-	private List<String> extractContentLink(String html, Date beginDate) throws ParserException {
+	private List<String> extractContentLink(String html, Date beginDate) throws Exception {
 		List<String> links = new LinkedList<String>();
 		// 找到搜索结果的form
 		NodeFilter filter = new NodeClassFilter(FormTag.class);
@@ -72,11 +72,11 @@ public class ParserHtml {
 		    	beginTime = sFormat.parse(sFormat.format(beginDate)).getTime(); // 当天零时零分
 				publishTime = sFormat.parse(dateLink.getLinkText()).getTime();
 			} catch (ParseException e) {
-				logger.warn("新闻: " + titleLink.getLinkText() + " 日期有错误，跳过该条！");
+				logger.info("newspaper: " + titleLink.getLinkText() + " skip.");
 				continue;
 			}
 		    if(publishTime < beginTime){ // 超出指定时间范围内不再解析
-		    	logger.info("该页已经超出日期范围停止搜索下页。");
+		    	logger.info("out of date stop search.");
 		    	done = true;
 		    	return links;
 		    }
@@ -100,12 +100,12 @@ public class ParserHtml {
 		int pageNo = startPage; // 当前页
 		int pageCount = endPage - startPage + 1; // 最大页数
 		int i = 1;
-		logger.info("搜索"+Constants.DATE_FORMAT.format(beginDate)+"至今"+startPage+"-"+endPage+"页记录");
+		logger.info("search"+Constants.DATE_FORMAT.format(beginDate)+startPage+"-"+endPage+"record.");
 		do {
 			if(i == 1){
-				logger.info("正在搜索第1页");
+				logger.info("searching page No.1");
 			}else{
-				logger.info("正在搜索第"+i+"页,共"+pageCount+"页。");
+				logger.info("Searching Page NO."+i+",total"+pageCount+"pages.");
 			}
 			// 查询关键字搜索页第一页
 			String queryUrl = url+pageNo;
@@ -123,7 +123,7 @@ public class ParserHtml {
 			pageNo++;
 			i++;
 		} while (pageNo <= pageCount && !done);
-		logger.info("搜索完毕开始写文件");
+		logger.info("Complete search, Writing file.");
 		return links;
 	}
 	
@@ -165,7 +165,7 @@ public class ParserHtml {
 		String postDate = fromAndPostDate.substring(fromAndPostDate.length() - 10);
 		String from = fromAndPostDate.replace(postDate, "");
 		// 内容
-		String content = parserTextFromElement(contentDiv, "p");
+		String content = getContent(contentDiv);
 		
 		Newspaper newspaper = new Newspaper();
 		newspaper.setTitle(title);
@@ -192,5 +192,17 @@ public class ParserHtml {
 			}
 		}
 		return new String(text.getBytes(),"utf8");
+	}
+	
+	private String getContent(Element html){
+		String text = "";
+		Elements list = html.select("p");
+		try {
+			text = list.toString();
+			text = text.replaceAll("<p>(\\s*)</p>", ""); // 去除空p标签
+			text = new String(text.getBytes(),"utf8");
+		} catch (UnsupportedEncodingException e) {
+		}
+		return text;
 	}
 }

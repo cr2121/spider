@@ -44,7 +44,7 @@ public class Http {
 		try {
 			http.login();
 		} catch (Exception e) {
-			logger.error("登陆网站失败，无法继续，请检查代理服务器。");
+			logger.error("login error, please check proxy server configuration.");
 			System.exit(3);
 		}
 	}
@@ -77,7 +77,7 @@ public class Http {
 					success = true;
 					break;
 				case 403:
-					logger.warn("ip被封停，正在更换代理服务器。");
+					logger.warn("please change proxy server.");
 					// 设置代理服务器
 					httpGet.abort();
 					changeProxyHost();
@@ -138,13 +138,13 @@ public class Http {
 	 */
 	private static void changeProxyHost(){
 		if(Store.hosts.size() == 0){
-			logger.error("代理服务器已经用完，仍没有采集足够新闻!");
+			logger.error("no more proxy servier!");
 			System.exit(6);
 		}
 		String hostAndPortString = Store.hosts.pop();
 		String[] hostAndPostArray = hostAndPortString.split(":");
 		HttpHost proxy = new HttpHost(hostAndPostArray[0], Integer.valueOf(hostAndPostArray[1]));
 		browser.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,	proxy);
-		logger.info("当前代理 " + hostAndPortString);
+		logger.info("current proxy server: " + hostAndPortString);
 	}
 }

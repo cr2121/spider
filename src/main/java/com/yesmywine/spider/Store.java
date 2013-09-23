@@ -42,10 +42,10 @@ public class Store {
 			}
 			reader.close();
 		} catch (FileNotFoundException e) {
-			logger.error("配置文件"+txtPath+"不存在！");
+			logger.error("config file"+txtPath+"not exist.");
 			System.exit(1);
 		} catch (IOException e) {
-			logger.error("配置文件"+txtPath+"读取错误！");
+			logger.error("config file"+txtPath+"not exist.");
 			System.exit(2);
 		}
 		return textContent;
